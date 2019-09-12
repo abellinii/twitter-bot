@@ -8,6 +8,7 @@ node_js:
 script:
   - unset CI
   - npm run build
+  - npm run post-build
 
 deploy:
   #PREVIOUS STRIGHT TO LAMBDA BUILD

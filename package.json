@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-        "build": "webpack"
+        "build": "webpack",
+        "post-build": "cd dist && zip bot.zip index.js"
   },
   "keywords": [],
   "author": "",

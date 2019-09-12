@@ -27,7 +27,7 @@ deploy:
   secret_access_key: $SECRET_ACCESS_KEY_ID
   bucket: "aion-staking-info-bot"
   skip_cleanup: true
-  local_dir: build
+  
   
 
 

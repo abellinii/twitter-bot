@@ -29,9 +29,9 @@ const path = require('path');
 
 //Create name for daily log file
 var date = new Date();
-var filename = "../Log/Activity:" + date.getFullYear() + "/" +
+var filename = "./Log/Activity:" + date.getFullYear() + "/" +
 				date.getMonth() + "/" + date.getDate() +
-				"-" + date.getHour() + : date.getMinutes() +
+				"-" + date.getHour() + ":" + date.getMinutes() +
 				".txt";
 
 
@@ -123,7 +123,7 @@ function getMentionedTweets(query, pop){
 	var result = T.get('search/tweets',ob,(err,data,response) =>{
 		  	var list =[]
 				
-			  	foreach(t in data){
+			  	for(var t in data){
 			  		list.push(t.id);
 			  	}
 			  	
@@ -140,7 +140,7 @@ function getMentionedTweets(query, pop){
 //Function to like a list of tweets
 function likeTweets(list){
 
-	foreach(tID in list){
+	for(var tID in list){
 		T.post('favorites/create/:id',{id:tID},(err,data,response) =>{
 
 		var text = "Tweet:" + data[0].id + " from user:" + data[1] + " [LIKED]\n";

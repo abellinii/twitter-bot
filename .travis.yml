@@ -1,9 +1,15 @@
- # Needs to be set up 
 
-# deploy:
-#   provider: lambda
-#   function_name: "lambda-test"
-#   region: "us-east-1"
-#   role: "arn:aws:iam::0123456789012:role/lambda_basic_execution"
-#   runtime: "nodejs4.3"
-#   handler_name: "handler"
+
+deploy:
+
+  build: npm run build
+
+  deploy:
+    provider: lambda
+    function_name: "aionStakingInfo-twitter-bot"
+    region: "us-east-1"
+    role: "arn:aws:iam::805245218516:role/aionStakingInfo_twitterBot"
+    runtime: "nodejs10.x"
+    handler_name: "index.handler"
+    local_dir: build
+  

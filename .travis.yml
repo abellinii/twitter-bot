@@ -2,7 +2,7 @@
 
 #update travis file
 
-deploy:
+
 
   build: npm run build
 
@@ -15,3 +15,5 @@ deploy:
     handler_name: "dist/index.handler"
     local_dir: build
   
+
+

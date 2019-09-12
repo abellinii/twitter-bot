@@ -1,5 +1,7 @@
 
 
+#update travis file
+
 deploy:
 
   build: npm run build
@@ -10,6 +12,6 @@ deploy:
     region: "us-east-1"
     role: "arn:aws:iam::805245218516:role/aionStakingInfo_twitterBot"
     runtime: "nodejs10.x"
-    handler_name: "index.handler"
+    handler_name: "dist/index.handler"
     local_dir: build
   

@@ -9,8 +9,6 @@ script:
   - unset CI
   - npm run build
 
-
-
 deploy:
   provider: lambda
   function_name: "aionStakingInfo-twitter-bot"

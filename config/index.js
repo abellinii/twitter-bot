@@ -22,7 +22,7 @@ module.exports = require('./dev');
 
 
 
-const Twit  = require('Twit');
+const Twit  = require('twit');
 const fs = require('fs');
 const path = require('path'); 
 

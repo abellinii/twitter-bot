@@ -180,7 +180,9 @@ function reTweet(list){
 //Main entry point
 
 exports.handler = function(event, context, callback){
+  
   createFile(filename);
+  
   var T = new Twit({
    consumer_key: module.exports.consumer_key,
    consumer_secret:module.exports.consumer_secret,

@@ -8,7 +8,7 @@
 //		*		-Retweets the most popular tweet containing one the following words: 	*
 //		*			[Aion_Network, Unity, Staking, Stake] 	     						*
 //		*																				*
-//		*									LIVE ON AWS LAMBDA                          *
+//		*						LIVE ON AWS LAMBDA                           		    *
 //		---------------------------------------------------------------------------------
 
 
@@ -20,11 +20,28 @@ module.exports = require('./prod');
 module.exports = require('./dev');
 }
 
-
-
 const Twit  = require('twit');
 const fs = require('fs');
 const path = require('path'); 
+const AWS = require("aws-sdk");
+
+
+
+
+
+
+//Access AWS to be able to write logs
+AWS.config.update({
+    accessKeyId: module.exports.aws_access_key_id ,
+    secretAccessKey: module.exports.aws_secret_access_key 
+  });
+
+var params = {
+  Bucket: bucketname,
+  Body : tempfile,
+  Key : filename
+};
+   
 
 
 //Create name for daily log file
@@ -33,7 +50,8 @@ var filename = "./Log/Activity:" + date.getFullYear() + "/" +
 				date.getMonth() + "/" + date.getDate() +
 				"-" + date.getHour() + ":" + date.getMinutes() +
 				".txt";
-
+var tempfile = "\n\n-----------------Tweet log file for " + date + " ------------------------------\n\n";
+var bucketname= 'aion-staking-info-bot';
 
 
 
@@ -64,26 +82,27 @@ exports.handler = (event, context, callback) => {
 
 function createFile(fileName){
 	 var day = date.getDay();
+	 var S3 = new AWS.S3();
 
 		 if(day % 7 == 0){
 		 	clearLogFolder();
 		 }
 
-	fs.appendFile(fileName);
+	S3.upload(params,(err,data)=>{
+
+		if(err)console.log("Error loading to S3 bucket");
+
+		if(data)console.log("File uploaded to :" + data.location);
+	})
+	
 
 }
 
 
 
-function writeToFile(file, input){
-	fs.appendFile(file,input,(err) => {
+function writeToFile( input){
 
-		if(err){
-
-			console.log("Error: " + err);
-			throw err;
-		 }
-	})
+   tempfile =+ input
 }
 
 
@@ -91,19 +110,28 @@ function writeToFile(file, input){
 
 
 function clearLogFolder(){
-	const logDirectory = "../Log";
+	 var params = {
+    Bucket: bucketname,
+    Prefix: 'Log/'
+  };
 
-		fs.readdir(logDirectory, (err,files) =>{
-			if(err) throw err;
+  s3.listObjects(params, function(err, data) {
+    if (err) return callback(err);
 
-			for(const file of files){
-				fs.unlink(path.join(logDirectory, file),err =>{
+    if (data.Contents.length == 0) callback();
 
-					if(err) throw err;
-				})
-			}
-		})
+    params = {Bucket: bucketname};
+    params.Delete = {Objects:[]};
 
+    data.Contents.forEach(function(content) {
+      params.Delete.Objects.push({Key: content.Key});
+    });
+
+    s3.deleteObjects(params, function(err, data) {
+      if (err) return  console.log(err);
+      
+    });
+  });
 }
 
 
@@ -145,7 +173,7 @@ function likeTweets(list){
 
 		var text = "Tweet:" + data[0].id + " from user:" + data[1] + " [LIKED]\n";
 
-		writeToFile(filename,text);
+		writeToFile(text);
 
 		})
 	}
@@ -160,7 +188,7 @@ function reTweet(list){
         
 		var text = "Tweet:" + data.user.id + " from user:" + data[0].tweet.user.screen_name + " [RETWEETED]\n";
 
-		writeToFile(filename,text);
+		writeToFile(text);
 
 		})
 	

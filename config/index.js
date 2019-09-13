@@ -48,7 +48,7 @@ var params = {
 var date = new Date();
 var filename = "./Log/Activity:" + date.getFullYear() + "/" +
 				date.getMonth() + "/" + date.getDate() +
-				"-" + date.getHour() + ":" + date.getMinutes() +
+				"-" + date.getHours() + ":" + date.getMinutes() +
 				".txt";
 var tempfile = "\n\n-----------------Tweet log file for " + date + " ------------------------------\n\n";
 var bucketname= 'aion-staking-info-bot';

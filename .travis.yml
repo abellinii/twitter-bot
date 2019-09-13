@@ -11,18 +11,6 @@ script:
   - npm run post-build
 
 deploy:
-  #PREVIOUS STRIGHT TO LAMBDA BUILD
-  # provider: lambda
-  # access_key_id: $ACCESS_KEY_ID
-  # secret_access_key: $SECRET_ACCESS_KEY_ID
-  # function_name: "aionStakingInfo-twitter-bot"
-  # region: "us-east-1"
-  # role: "arn:aws:iam::805245218516:role/aionStakingInfo_twitterBot"
-  # runtime: "nodejs10.x"
-  # handler_name: "dist/index.handler"
-  # local_dir: build
-
-  #S3 TRIAL
   provider: s3
   access_key_id: $ACCESS_KEY_ID
   secret_access_key: $SECRET_ACCESS_KEY_ID

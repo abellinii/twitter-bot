@@ -179,7 +179,7 @@ function reTweet(list){
 
 //Main entry point
 
-exports.handler = function(event, context, callback){
+exports.handler = function index(event, context, callback){
   
   createFile(filename);
   

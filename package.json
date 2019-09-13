@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "post-build": "cd dist && zip bot.zip index.js"
+    "post-build": "cd dist && zip index.js.zip index.js"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +17,7 @@
     "twit": "^2.2.11"
   },
   "devDependencies": {
-    "webpack": "^4.39.3",
+    "webpack": "^4.40.2",
     "webpack-cli": "^3.3.8"
   }
 }

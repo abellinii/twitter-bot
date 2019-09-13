@@ -56,25 +56,7 @@ var bucketname= 'aion-staking-info-bot';
 
 
 
-//Main entry point
 
-exports.handler = (event, context, callback) => {
-  createFile(filename);
-  var T = new Twit({
-   consumer_key: module.exports.consumer_key,
-   consumer_secret:module.exports.consumer_secret,
-   access_token: module.exports.access_token,
-   access_token_secret: module.exports.access_token_secret
-	});
-
-  var AionTweets =  getMentionedTweets("Aion%20OR%20Stake%20OR%20Blockchain%20OR%20DApp%20OR%20Aion_Network");
-  var unityTweets = getMentionedTweets("Aion_Network%20Unity%20OR%20Staking%20OR%20Stake",true)
-  likeTweets(AionTweets);
-  reTweet(unityTweets);
-
-
-
-}
 
 
 
@@ -192,6 +174,27 @@ function reTweet(list){
 
 		})
 	
+}
+
+
+//Main entry point
+
+exports.handler = function(event, context, callback){
+  createFile(filename);
+  var T = new Twit({
+   consumer_key: module.exports.consumer_key,
+   consumer_secret:module.exports.consumer_secret,
+   access_token: module.exports.access_token,
+   access_token_secret: module.exports.access_token_secret
+	});
+
+  var AionTweets =  getMentionedTweets("Aion%20OR%20Stake%20OR%20Blockchain%20OR%20DApp%20OR%20Aion_Network");
+  var unityTweets = getMentionedTweets("Aion_Network%20Unity%20OR%20Staking%20OR%20Stake",true)
+  likeTweets(AionTweets);
+  reTweet(unityTweets);
+
+
+
 }
 
 

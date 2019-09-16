@@ -2,7 +2,7 @@
 //		------------------------------------TWITTER_BOT----------------------------------
 //      *																				*
 //		*		Functional twitter bot for @aionstakinginfo								*						
-//		*		-operates twice daily        											*
+//		*		-operates hourly            											*
 //		*		-likes all tweets containing one of the following words: 				*
 //		*			[Aion, Stake, Blockchain, Dapp, Aion_Network] 						*
 //		*		-Retweets the most popular tweet containing one the following words: 	*
@@ -24,15 +24,20 @@ const Twit  = require('twit');
 const fs = require('fs');
 const path = require('path'); 
 const AWS = require("aws-sdk");
+var date 
+var filename 
+var tempfile
+var bucketname
+let params = {};
 
+
+//Create Twit instance
  var T = new Twit({
    consumer_key: module.exports.consumer_key,
    consumer_secret:module.exports.consumer_secret,
    access_token: module.exports.access_token,
    access_token_secret: module.exports.access_token_secret
 	});
-
-
 
 
 //Access AWS to be able to write logs
@@ -45,18 +50,28 @@ AWS.config.update({
    
 
 
+
+
+
 //Create name for daily log file
-var date = new Date();
-var filename = "Log/Activity:" + date.getFullYear() + "-" +
+function intialiseBotVaraibles(bucket){
+ 
+ date = new Date();
+ var minutes = (parseInt(date.getMinutes()) < 10 ) ? '0' + date.getMinutes():date.getMinutes();
+ filename = "Log/Activity:" + date.getFullYear() + "-" +
 				date.getMonth() + "-" + date.getDate() +
-				"-" + date.getHours() + ":" + date.getMinutes() +
+				"-" + date.getHours() + ":" + minutes +
 				".txt";
-var tempfile = "\n\n--------------------------Tweet log file for " + date + " ------------------------------\n\n";
-var bucketname= 'aion-staking-info-bot';
+ tempfile += "\n\n--------------------------Tweet log file for " + date + " ------------------------------\n\n";
+ bucketname= bucket;
 
+ console.log("Intialising global variables\n" +
+ 			"file name: " + filename + "\n"  +
+ 			"bucket name: " + bucketname + "\n"  +
+ 			"date: " + date )
+ 	
 
-
-
+}
 
 
 
@@ -64,6 +79,8 @@ var bucketname= 'aion-staking-info-bot';
 
 
 function createFile(fileName){
+
+	return new Promise((res,rej)=>{
 	console.log("file being created")
 	 var day = date.getDay();
 	 var S3 = new AWS.S3();
@@ -72,7 +89,7 @@ function createFile(fileName){
 		 	clearLogFolder();
 		 }
 		 
-		 let params = {
+		  params = {
 		  Bucket: bucketname,
 		  Body : tempfile,
 		  Key : filename
@@ -80,11 +97,18 @@ function createFile(fileName){
 
 	S3.upload(params,(err,data)=>{
 
-		if(err)console.log("Error loading to S3 bucket");
+		if(err){
+			console.log("Error loading to S3 bucket");
+			rej(Error(err))}
 
-		if(data)console.log("File uploaded to :" + data.location);
+		if(data){
+			console.log(filename +" uploaded to :" + data.Location);
+			res(data)
+		}
+
 	})
 	
+	})
 
 }
 
@@ -101,6 +125,9 @@ function writeToFile( input){
 
 
 function clearLogFolder(){
+
+
+
 	  params = {
     Bucket: bucketname,
     Prefix: 'Log/'
@@ -123,6 +150,8 @@ function clearLogFolder(){
       
     });
   });
+
+
 }
 
 
@@ -228,6 +257,8 @@ var  reTweet = async function(list){
 
 module.exports.handler =  async (event, context) => {
   
+	intialiseBotVaraibles('aion-staking-info-bot');
+
 
    var retweetSearch = await getMentionedTweets("Aion_Network%20#Unity%20OR%20#Staking%20OR%20Stake%20OR%20Staking%20OR%20Stake")
 
@@ -237,8 +268,11 @@ module.exports.handler =  async (event, context) => {
 
      await likeTweets(likeSearch);
 
-   createFile(filename);
+     var done = await createFile(filename);
 
+     if(done){
+     	console.log("Bot Task Completed")
+     }
 }
 
 

@@ -3,7 +3,7 @@ const path = require('path');module.exports = {
     output: {
       path: path.resolve(__dirname, './dist'),
       filename: 'index.js',
-      libraryTarget: 'commonjs2'
+      libraryTarget: 'commonjs'
     },
     target: 'node',
     mode: 'production'

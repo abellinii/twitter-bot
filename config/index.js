@@ -13,7 +13,7 @@
 
 
 
-// Depending on env set API env variables
+//Depending on env set API env variables
 if (process.env.NODE_ENV === 'production') {
 module.exports = require('./prod');
 } else {
@@ -25,7 +25,12 @@ const fs = require('fs');
 const path = require('path'); 
 const AWS = require("aws-sdk");
 
-
+ var T = new Twit({
+   consumer_key: module.exports.consumer_key,
+   consumer_secret:module.exports.consumer_secret,
+   access_token: module.exports.access_token,
+   access_token_secret: module.exports.access_token_secret
+	});
 
 
 
@@ -36,21 +41,17 @@ AWS.config.update({
     secretAccessKey: module.exports.aws_secret_access_key 
   });
 
-var params = {
-  Bucket: bucketname,
-  Body : tempfile,
-  Key : filename
-};
+
    
 
 
 //Create name for daily log file
 var date = new Date();
-var filename = "./Log/Activity:" + date.getFullYear() + "/" +
-				date.getMonth() + "/" + date.getDate() +
+var filename = "Log/Activity:" + date.getFullYear() + "-" +
+				date.getMonth() + "-" + date.getDate() +
 				"-" + date.getHours() + ":" + date.getMinutes() +
 				".txt";
-var tempfile = "\n\n-----------------Tweet log file for " + date + " ------------------------------\n\n";
+var tempfile = "\n\n--------------------------Tweet log file for " + date + " ------------------------------\n\n";
 var bucketname= 'aion-staking-info-bot';
 
 
@@ -63,12 +64,19 @@ var bucketname= 'aion-staking-info-bot';
 
 
 function createFile(fileName){
+	console.log("file being created")
 	 var day = date.getDay();
 	 var S3 = new AWS.S3();
 
 		 if(day % 7 == 0){
 		 	clearLogFolder();
 		 }
+		 
+		 let params = {
+		  Bucket: bucketname,
+		  Body : tempfile,
+		  Key : filename
+		};
 
 	S3.upload(params,(err,data)=>{
 
@@ -84,7 +92,8 @@ function createFile(fileName){
 
 function writeToFile( input){
 
-   tempfile =+ input
+   tempfile += input
+   
 }
 
 
@@ -92,7 +101,7 @@ function writeToFile( input){
 
 
 function clearLogFolder(){
-	 var params = {
+	  params = {
     Bucket: bucketname,
     Prefix: 'Log/'
   };
@@ -121,26 +130,36 @@ function clearLogFolder(){
 
 
 //Function to comment on all tweets where [word] is mentioned
-function getMentionedTweets(query, pop){
-	var ob = {q: query}
+   var getMentionedTweets =  function(query, pop){
+ 		return new Promise(async (res,rej)=>{
+ 			var list =[]
+ 	
+			var ob = {q: query}
 
-		if(pop){
-			ob = {q:query,
-				  result_type:popular
-				  }
-		}
-
-	var result = T.get('search/tweets',ob,(err,data,response) =>{
-		  	var list =[]
+				if(pop){
+					ob = {q:query,
+						  result_type:"popular"
+						  }
+				}
 				
-			  	for(var t in data){
-			  		list.push(t.id);
-			  	}
-			  	
-				  })
+			       T.get('search/tweets',ob,(err,data,response) =>{
+				  		
+					  	 for(var t in data.statuses){
+					  		
+					  		list.push(data.statuses[t].id_str);
 
-	return result;
-}
+							  	}
+					  		res(list)
+						  })
+						  
+					 
+
+	    	})
+	    
+ 	}
+
+	
+
 
 
 
@@ -148,54 +167,77 @@ function getMentionedTweets(query, pop){
 
 
 //Function to like a list of tweets
-function likeTweets(list){
+var likeTweets =async function(list){
 
-	for(var tID in list){
-		T.post('favorites/create/:id',{id:tID},(err,data,response) =>{
+	var promises =[]
+ 	
+	
+	 for(var tID in list){
+	 		
+	 	promises.push(new Promise(function(res,rej){
+		
+				var newInt = parseInt(list[tID])
+			    T.post('favorites/create',{id:list[tID]},(err,data,response) =>{
+						if(data.id_str){
+						     text = "Tweet:" + data.id_str + " ,text:" + data.text + " [LIKED]\n";    
+						}else{
+							 text = "Error: " + data +" [LIKED]\n";
+						}
 
-		var text = "Tweet:" + data[0].id + " from user:" + data[1] + " [LIKED]\n";
+						writeToFile(text)
 
-		writeToFile(text);
+				}).then((res) => {
+		            resolve(res.body[0])
+		        }, (res) => {
+		            console.log(res)
+		        })
+         }))
 
-		})
 	}
-}
+
+	Promise.all(promises)  
+
+
+	}
+
+
+
 
 
 //Function to retweet a tweet from list
-function reTweet(list){
+var  reTweet = async function(list){
 
+		var rand = parseInt(Math.random() * 10)
+			
+	   	
+		 T.post('statuses/retweet/:id',{id:list[rand]},(err,data,response) =>{
+			
+				if(data.id_str){	
+				 text = "Tweet:" + data._str + " ,text" + data.text + " [RETWEETED]\n";	
+				}else{
+				 text = "Error: " + data + " [RETWEETED]\n";
+				}
+				writeToFile(text);
+
+			})
 	
-		T.post('statuses/retweet/',{id:list[0]},(err,data,response) =>{
-        
-		var text = "Tweet:" + data.user.id + " from user:" + data[0].tweet.user.screen_name + " [RETWEETED]\n";
-
-		writeToFile(text);
-
-		})
-	
-}
+		}
 
 
 //Main entry point
 
-exports.handler = function index(event, context, callback){
+module.exports.handler =  async (event, context) => {
   
-  createFile(filename);
-  
-  var T = new Twit({
-   consumer_key: module.exports.consumer_key,
-   consumer_secret:module.exports.consumer_secret,
-   access_token: module.exports.access_token,
-   access_token_secret: module.exports.access_token_secret
-	});
 
-  var AionTweets =  getMentionedTweets("Aion%20OR%20Stake%20OR%20Blockchain%20OR%20DApp%20OR%20Aion_Network");
-  var unityTweets = getMentionedTweets("Aion_Network%20Unity%20OR%20Staking%20OR%20Stake",true)
-  likeTweets(AionTweets);
-  reTweet(unityTweets);
+   var retweetSearch = await getMentionedTweets("Aion_Network%20#Unity%20OR%20#Staking%20OR%20Stake%20OR%20Staking%20OR%20Stake")
 
+     await reTweet(retweetSearch);
 
+   var likeSearch =  await getMentionedTweets("Aion%20OR%20Stake%20OR%20Blockchain%20OR%20DApp%20OR%20Aion_Network")
+
+     await likeTweets(likeSearch);
+
+   createFile(filename);
 
 }
 

@@ -6,23 +6,23 @@
 
 
 
-export default class Tweet{
+module.exports = class Tweet{
 
 
 
-	constructor(id, username, link, comments){
-		this.id = id;
-		this.username = username;
-		this.link = link;
-		this.comments = comments
+	constructor(){
+		this.id = "";
+		this.username = "";
+		this.link = "";
+		this.comments = [];
 	}
 
 	getRandomComment(){
-		return this.comments[Math.floor(Math.random() * comments.length + 1)];
+		return this.comments[Math.floor(Math.random() * this.comments.length + 1)];
 	}
 
 	getTweet(){
-		return "@" + username + " " + getRandomComment() + "\n " + link;
+		return "@" + this.username + " " + this.getRandomComment() + "\n " + this.link;
 	}
 
 

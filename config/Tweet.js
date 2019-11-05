@@ -8,10 +8,7 @@
 
 export default class Tweet{
 
-	id;
-	username;
-	link;
-    comments;
+
 
 	constructor(id, username, link, comments){
 		this.id = id;

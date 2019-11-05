@@ -18,7 +18,7 @@ export default class Tweet{
 	}
 
 	getRandomComment(){
-		return this.comments[Math.floor((Math.random() * comments.length + 1)];
+		return this.comments[Math.floor(Math.random() * comments.length + 1)];
 	}
 
 	getTweet(){

@@ -159,17 +159,17 @@ function clearLogFolder(){
 //
 
 //Function to comment on all tweets where [word] is mentioned
-   var getMentionedTweets =  function(query, pop, notarray){
+   var getMentionedTweets =  function(query, notarray){
  		return new Promise(async (res,rej)=>{
  			var list =[]
  	
 			var ob = {q: query}
 
-				if(pop){
-					ob = {q:query,
-						  result_type:"popular"
-						  }
-				}
+				// if(pop){
+				// 	ob = {q:query,
+				// 		  result_type:"popular"
+				// 		  }
+				// }
 
 				if(notarray){
 					   T.get('search/tweets',ob,(err,data,response) =>{
@@ -274,26 +274,33 @@ var  commentTweet = async function(list){
 		'Judging your tweets. You should check out this article',
 		'Here is a great article you should read',
 		'A hybrid consensus will be the future of blockchains'] 
-
+		var promises =[]
 		var atweet = new tweet();	
 		atweet.comments = comments;
 		atweet.link = "https://medium.com/@thelostlinkblog/could-a-hybrid-blockchain-consensus-be-better-than-the-sum-of-its-parts-2f2a2e360eda";
 		for(user of list){
-		
-	   	atweet.id = user.id;
-	   	atweet.username = user.userName;
-		 T.post('statuses/update',{in_reply_to_status_id:atweet.id, status:atweet.getTweet()},(err,data,response) =>{
-			
-				if(data.id_str){	
-				 text = "Tweet:" + data._str + " ,text" + data.text + " [REPLIED TO TWEET]\n";	
-				}else{
-				 text = "Error: " + data + " [REPLIED TO TWEET]\n";
-				}
-				writeToFile(text);
 
-			})
+				atweet.id = user.id;
+			   	atweet.username = user.userName;
+
+		promises.push(new Promise(function(res,rej){
+				
+			   
+				 T.post('statuses/update',{in_reply_to_status_id:atweet.id, status:atweet.getTweet()},(err,data,response) =>{
+					
+						if(data.id_str){	
+						 text = "Tweet:" + data._str + " ,text" + data.text + " [REPLIED TO TWEET]\n";	
+						}else{
+						 text = "Error: " + data + " [REPLIED TO TWEET]\n";
+						}
+						writeToFile(text);
+
+					})
+				}))
 
 		}
+
+		Promise.all(promises)
 	
 		}
 
@@ -306,13 +313,17 @@ module.exports.handler =  async (event, context) => {
 	intialiseBotVaraibles('aion-staking-info-bot');
 
 
-   var retweetSearch = await getMentionedTweets("Aion_Network%20#Unity%20OR%20#Staking%20OR%20Stake%20OR%20Staking%20OR%20Stake")
+   var retweetSearch = await getMentionedTweets("Aion_Network%20#Unity%20OR%20#Staking%20OR%20OpenApplictionNetwork%20OR%20Stake%20OR%20Staking%20OR%20Stake")
 
      await reTweet(retweetSearch);
 
    var likeSearch =  await getMentionedTweets("Aion%20OR%20Stake%20OR%20Blockchain%20OR%20DApp%20OR%20Aion_Network")
 
      await likeTweets(likeSearch);
+
+     var replySearch =  await getMentionedTweets("Consensus%20OR%20Proof%20of%20work%20OR%20Proof%20of%20stake%20OR%20Stake%20OR%20Blockchain%20OR%20DApp%20OR%20Hybrid")
+
+     await commentTweets(replySearch);
 
      var done = await createFile(filename);
 

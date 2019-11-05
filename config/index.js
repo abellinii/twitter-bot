@@ -19,7 +19,7 @@ module.exports = require('./prod');
 } else {
 module.exports = require('./dev');
 }
-
+const tweet = require('./Tweet');
 const Twit  = require('twit');
 const fs = require('fs');
 const path = require('path'); 
@@ -156,10 +156,10 @@ function clearLogFolder(){
 
 
 
-
+//
 
 //Function to comment on all tweets where [word] is mentioned
-   var getMentionedTweets =  function(query, pop){
+   var getMentionedTweets =  function(query, pop, notarray){
  		return new Promise(async (res,rej)=>{
  			var list =[]
  	
@@ -170,6 +170,18 @@ function clearLogFolder(){
 						  result_type:"popular"
 						  }
 				}
+
+				if(notarray){
+					   T.get('search/tweets',ob,(err,data,response) =>{
+				  		
+					  	 for(var t in data.statuses){
+					  		
+					  		list.push({"id":data.statuses[t].id_str,"userName":data.statuses[t].user.screen_name});
+
+							  	}
+					  		res(list);
+						  })
+				}else{
 				
 			       T.get('search/tweets',ob,(err,data,response) =>{
 				  		
@@ -181,7 +193,7 @@ function clearLogFolder(){
 					  		res(list)
 						  })
 						  
-					 
+					 }
 
 	    	})
 	    
@@ -251,6 +263,40 @@ var  reTweet = async function(list){
 			})
 	
 		}
+
+
+
+//Post a pre specified comment including a link 
+var  commentTweet = async function(list){
+
+		var comments = ['Have you thought about a hybrid consensus?',
+		 'I think this might spike your interest',
+		'Judging your tweets. You should check out this article',
+		'Here is a great article you should read',
+		'A hybrid consensus will be the future of blockchains'] 
+
+		var atweet = new tweet();	
+		atweet.comments = comments;
+		atweet.link = "https://medium.com/@thelostlinkblog/could-a-hybrid-blockchain-consensus-be-better-than-the-sum-of-its-parts-2f2a2e360eda";
+		for(user of list){
+		
+	   	atweet.id = user.id;
+	   	atweet.username = user.userName;
+		 T.post('statuses/update',{in_reply_to_status_id:atweet.id, status:atweet.getTweet()},(err,data,response) =>{
+			
+				if(data.id_str){	
+				 text = "Tweet:" + data._str + " ,text" + data.text + " [REPLIED TO TWEET]\n";	
+				}else{
+				 text = "Error: " + data + " [REPLIED TO TWEET]\n";
+				}
+				writeToFile(text);
+
+			})
+
+		}
+	
+		}
+
 
 
 //Main entry point

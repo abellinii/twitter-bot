@@ -321,9 +321,9 @@ module.exports.handler =  async (event, context) => {
 
      await likeTweets(likeSearch);
 
-     var replySearch =  await getMentionedTweets("Consensus%20OR%20Proof%20of%20work%20OR%20Proof%20of%20stake%20OR%20Stake%20OR%20Blockchain%20OR%20DApp%20OR%20Hybrid")
+     var replySearch =  await getMentionedTweets("Consensus%20OR%20Proof%20of%20work%20OR%20Proof%20of%20stake%20OR%20Stake%20OR%20Blockchain%20OR%20DApp%20OR%20Hybrid",true)
 
-     await commentTweets(replySearch);
+     await commentTweet(replySearch);
 
      var done = await createFile(filename);
 

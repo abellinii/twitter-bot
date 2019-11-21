@@ -18,7 +18,7 @@ module.exports = class Tweet{
 	}
 
 	getRandomComment(){
-		return this.comments[Math.floor(Math.random() * this.comments.length + 1)];
+		return this.comments[Math.floor(Math.random() * this.comments.length )];
 	}
 
 	getTweet(){

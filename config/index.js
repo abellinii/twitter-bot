@@ -165,11 +165,7 @@ function clearLogFolder(){
  	
 			var ob = {q: query}
 
-				// if(pop){
-				// 	ob = {q:query,
-				// 		  result_type:"popular"
-				// 		  }
-				// }
+				
 
 				if(notarray){
 					   T.get('search/tweets',ob,(err,data,response) =>{
@@ -245,66 +241,6 @@ var likeTweets =async function(list){
 
 
 
-//Function to retweet a tweet from list
-var  reTweet = async function(list){
-
-		var rand = parseInt(Math.random() * 10)
-			
-	   	
-		 T.post('statuses/retweet/:id',{id:list[rand]},(err,data,response) =>{
-			
-				if(data.id_str){	
-				 text = "Tweet:" + data._str + " ,text" + data.text + " [RETWEETED]\n";	
-				}else{
-				 text = "Error: " + data + " [RETWEETED]\n";
-				}
-				writeToFile(text);
-
-			})
-	
-		}
-
-
-
-//Post a pre specified comment including a link 
-var  commentTweet = async function(list){
-
-		var comments = ['Have you thought about a hybrid consensus?',
-		 'I think this might spike your interest',
-		'Judging your tweets. You should check out this article',
-		'Here is a great article you should read',
-		'A hybrid consensus will be the future of blockchains'] 
-		var promises =[]
-		var atweet = new tweet();	
-		atweet.comments = comments;
-		atweet.link = "https://medium.com/@thelostlinkblog/could-a-hybrid-blockchain-consensus-be-better-than-the-sum-of-its-parts-2f2a2e360eda";
-		for(user of list){
-
-				atweet.id = user.id;
-			   	atweet.username = user.userName;
-
-		promises.push(new Promise(function(res,rej){
-				
-			   
-				 T.post('statuses/update',{in_reply_to_status_id:atweet.id, status:atweet.getTweet()},(err,data,response) =>{
-					
-						if(data.id_str){	
-						 text = "Tweet:" + data._str + " ,text" + data.text + " [REPLIED TO TWEET]\n";	
-						}else{
-						 text = "Error: " + data + " [REPLIED TO TWEET]\n";
-						}
-						writeToFile(text);
-
-					})
-				}))
-
-		}
-
-		Promise.all(promises)
-	
-		}
-
-
 
 //Main entry point
 
@@ -324,6 +260,10 @@ module.exports.handler =  async (event, context) => {
      var replySearch =  await getMentionedTweets("Consensus%20OR%20Proof%20of%20work%20OR%20Proof%20of%20stake%20OR%20Stake%20OR%20Blockchain%20OR%20DApp%20OR%20Hybrid",true)
 
      await commentTweet(replySearch);
+
+       var tweetAboutPassiveTrustSearch =  await getMentionedTweets("Stake%20AND%20Aion",true)
+
+     await commentAboutThePassiveTrustTweet(tweetAboutPassiveTrustSearch);
 
      var done = await createFile(filename);
 
